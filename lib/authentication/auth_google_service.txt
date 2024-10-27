@@ -1,0 +1,165 @@
+// import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:flutter/material.dart';
+// import 'package:google_sign_in/google_sign_in.dart';
+// import 'package:ride_sync/auth.dart';
+// import 'package:ride_sync/authentication/auth_database.dart';
+// import 'package:ride_sync/authentication/signup_google.dart';
+// import 'package:ride_sync/colours.dart';
+// import 'package:ride_sync/screens/home.dart';
+
+// class AuthGoogleService {
+//   final _authDatabase = AuthDatabase();
+
+//   // GOOGLE AUTHENTICATION
+//   Future<void> signInWithGoogle(BuildContext context) async {
+//     try {
+//       if (!context.mounted) return;
+//       print("\n\n1 Im There\n\n");
+
+//       final GoogleSignIn googleSignIn = GoogleSignIn();
+//       await googleSignIn.signOut();
+//       final GoogleSignInAccount? googleSignInAccount =
+//           await googleSignIn.signIn();
+//       if (googleSignInAccount == null) {
+//         print("Error: Google Sign-In canceled by user.");
+//         return;
+//       }
+
+//       if (!context.mounted) return;
+//       print("\n\n2 Im There\n\n");
+
+//       final GoogleSignInAuthentication googleSignInAuthentication =
+//           await googleSignInAccount.authentication;
+//       final AuthCredential credential = GoogleAuthProvider.credential(
+//         idToken: googleSignInAuthentication.idToken,
+//         accessToken: googleSignInAuthentication.accessToken,
+//       );
+
+//       if (!context.mounted) return;
+//       print("\n\n3 Im There\n\n");
+
+//       UserCredential result =
+//           await FirebaseAuth.instance.signInWithCredential(credential);
+//       User? userDetails = result.user;
+//       if (userDetails == null) {
+//         if (!context.mounted) return;
+//         errorMsg(context, "Error: User sign-in failed!");
+//         return;
+//       }
+
+//       if (!context.mounted) return;
+//       print("\n\n4 Im There\n\n");
+//       // Navigator.of(context)
+//       //     .pushReplacement(MaterialPageRoute(builder: (context) {
+//       //   return AuthPage();
+//       // }));
+
+//       final querySnapshot = await FirebaseFirestore.instance
+//           .collection('Users')
+//           .where('email', isEqualTo: userDetails.email)
+//           .get();
+
+//       if (context.mounted) {
+//         print("\n\n5 Im There\n\n");
+//       }
+
+//       print("Query snapshot length: ${querySnapshot.docs.length}");
+
+//       if (querySnapshot.docs.isEmpty) {
+//         print("User not registered, navigating to RegisterGooglePage.");
+//         if (context.mounted) {
+//           Navigator.of(context)
+//               .pushReplacement(MaterialPageRoute(builder: (context) {
+//             print("Navigating to RegisterGooglePage");
+//             return RegisterGooglePage(
+//               name: userDetails.displayName ?? '',
+//               email: userDetails.email ?? '',
+//               photoUrl: userDetails.photoURL ?? '',
+//               uid: userDetails.uid,
+//             );
+//           }));
+//         }
+//       } else {
+//         print("User already registered");
+//         if (context.mounted) {
+//           Navigator.of(context)
+//               .pushReplacement(MaterialPageRoute(builder: (context) {
+//             print("Navigating to HomePage");
+//             return const HomePage(); // Navigate to the authenticated home page
+//           }));
+//         }
+//       }
+//     } catch (e) {
+//       if (!context.mounted) return;
+//       errorMsg(context, "Error: $e");
+//       print("Error: $e");
+//     }
+//   }
+
+// // REGISTERING WITH GOOGLE
+//   Future<void> registerUserWithGoogle(
+//       BuildContext context,
+//       String name,
+//       String email,
+//       String phone,
+//       String gender,
+//       String photoUrl,
+//       String uid) async {
+//     if (phone.length != 10) {
+//       errorMsg(context, "Please enter a valid 10 digit number!");
+//       return;
+//     }
+
+//     showDialog(
+//         context: context,
+//         builder: (context) {
+//           return const Center(
+//             child: CircularProgressIndicator(
+//               color: deepGreen,
+//             ),
+//           );
+//         });
+
+//     try {
+//       Map<String, dynamic> userInfoMap = {
+//         "name": name,
+//         "email": email,
+//         "phone": phone,
+//         "gender": gender,
+//         "imgURL": photoUrl,
+//         "id": uid,
+//       };
+
+//       if (!context.mounted) return;
+//       Navigator.pop(context); // Close the dialog
+
+//       await _authDatabase.addUser(uid, userInfoMap).then((value) {
+//         print("User registered successfully, navigating to AuthPage.");
+//         Navigator.of(context).pushReplacement(
+//           MaterialPageRoute(builder: (context) {
+//             print("Navigating to AuthPage");
+//             return const AuthPage();
+//           }),
+//         );
+//       }).catchError((error) {
+//         errorMsg(context, "Error: $error");
+//       });
+//     } catch (e) {
+//       if (!context.mounted) return;
+//       Navigator.pop(context);
+//       errorMsg(context, e.toString());
+//     }
+//   }
+
+// // SNACKBAR FOR ERRORS
+//   void errorMsg(BuildContext context, String errorMsg) {
+//     if (context.mounted) {
+//       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+//           content: Text(
+//         errorMsg,
+//         style: const TextStyle(fontSize: 16),
+//       )));
+//     }
+//   }
+// }
